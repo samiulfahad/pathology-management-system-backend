@@ -1,64 +1,65 @@
 const { ObjectId } = require("mongodb")
-const moment = require("moment-timezone")
+
 
 const { getClient } = require("./connection")
 
-class Invoice {
-  constructor(name, age, contact, referredBy, testList, total, netAmount, paid) {
-    this.name = name
-    this.age = age
-    this.contact = contact
-    this.referredBy = referredBy
-    this.testList = testList
-    this.total = total
-    this.netAmount = netAmount
-    this.paid = paid
-    this.notified = false
-    this.delivered = false
+class RBC {
+  constructor(labId, invoiceId) {
+    this.redBloodCellCount = null
+    this.hemoglobin = null
+    this.hematocrit = null
+    this.meanCorpuscularVolume = null
+    this.meanCorpuscularHemoglobin = null
+    this.redCellDistributionWidth = null
     this.completed = false
-    this.createdAt = moment().format()
-    this.invoiceId = moment().format("DDMMYY-HHmmss")
-    this.labId = "bhaluka123"
+    this.invoiceId = invoiceId
+    this.labId = labId
   }
 
   // Insert single document
   static async insertOne(doc) {
     try {
       const db = getClient()
-      const result = await db.collection("collection-1").insertOne(doc)
-      return result.insertedId ? result.insertedId : null
+      const result = await db.collection("rbc-bhaluka").insertOne(doc)
+      if (result.insertedId) {
+        const doc = await this.findById(result.insertedId)
+        console.log(doc)
+        return true
+      } else {
+        return null
+      }
     } catch (e) {
       return handleError(e, "insertOne")
     }
   }
 
-  // Find one document by id
-  static async findById(id) {
+  // Find a document by id
+  static async findById(labId, invoiceId) {
     try {
       const db = getClient()
-      const invoice = await db.collection("collection-1").findOne({ _id: id })
-      return invoice ? { success: true, invoice } : null
+      const report = await db.collection("rbc-bhaluka").findOne({ labId: ObjectId(labId), invoiceId: invoiceId })
+      return report ? { success: true, report } : null
     } catch (e) {
       return handleError(e, "findById")
     }
   }
 
-  static async findAll() {
+  static async findAll(labId) {
     try {
       const db = getClient()
-      const invoices = await db.collection("collection-1").find({}).toArray()
-      const total = await db.collection("collection-1").countDocuments()
-      return { total, invoices }
+      const reports = await db.collection("rbc-bhaluka").find({labId: ObjectId(labId)}).toArray()
+      const total = await db.collection("rbc-bhaluka").countDocuments()
+      return { total, reports }
     } catch (e) {
       return handleError(e, "findAll")
     }
   }
 
   // Count all documents of a collection
-  static async countAll() {
+  static async countAll(labId) {
     try {
       const db = getClient()
-      const count = await db.collection("collection-1").countDocuments()
+      const count = await db.collection("rbc-bhaluka").countDocuments({labId: ObjectId(labId)})
       if (count) {
         return count
       }
@@ -72,7 +73,7 @@ class Invoice {
     try {
       const db = getClient()
       const filter = { _id: ObjectId(id) }
-      const result = await db.collection("collection-1").updateOne(filter, { $set: update })
+      const result = await db.collection("rbc-bhaluka").updateOne(filter, { $set: update })
       if (result.modifiedCount === 0) {
         return null
       } else if (result.modifiedCount === 1) {
@@ -87,7 +88,7 @@ class Invoice {
   static async dropCollection() {
     try {
       const db = getClient()
-      const result = await db.collection("collection-1").drop()
+      const result = await db.collection("rbc-bhaluka").drop()
       if (result) {
         return true
       } else {
@@ -105,4 +106,4 @@ const handleError = (e, methodName) => {
   return null
 }
 
-module.exports = Invoice
+module.exports = RBC
