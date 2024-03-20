@@ -15,7 +15,7 @@ app.get('/', (req, res, next)=> {
 })
 app.post('/api/v1/invoice/create', invoiceController.CreateInvoice)
 app.get("/api/v1/invoice/all", invoiceController.GetAllInvoices )
-app.get("/api/v1/clear", invoiceController.DropCollection )
+app.get("/api/v1/invoice/clear", invoiceController.DropCollection )
 
 // Error Handling Center
 app.use((err, req, res, next) => {

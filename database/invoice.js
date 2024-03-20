@@ -46,7 +46,8 @@ class Invoice {
   static async findAll() {
     try {
       const db = getClient()
-      const invoices = await db.collection("collection-1").find({}).toArray()
+      const projection = { invoiceId: 1, name: 1, netAmount: 1, paid: 1, completed: 1, delivered: 1, notified: 1, _id: 0 }
+      const invoices = await db.collection("collection-1").find({}).project(projection).toArray()
       const total = await db.collection("collection-1").countDocuments()
       return { total, invoices }
     } catch (e) {
