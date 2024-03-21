@@ -1,7 +1,6 @@
 const Invoice = require("../database/invoice")
-const CreateTest = require('../helpers/CreateTest');
+const CreateTest = require("../helpers/CreateTest")
 const AllowedList = ["CBC", "RBC", "XRAY", "ECG"]
-
 
 // Create a new invoice
 const CreateInvoice = async (req, res, next) => {
@@ -45,6 +44,42 @@ const GetAllInvoices = async (req, res, next) => {
   }
 }
 
+// Send SMS to Patient
+const NotifyPatient = async (req, res, next) => {
+  try {
+    const result = await Invoice.updateByInvoiceId(req.body.invoiceId, { notified: true })
+    if (result) {
+      res.status(201).send({ success: true, total: result.total, invoices: result.invoices })
+    } else {
+      throw new Error("Could not get send SMS @statusCode 500")
+    }
+  } catch (e) {
+    next(e)
+  }
+}
+
+// Update invoice
+const Update = async (req, res, next) => {
+  try {
+    let result = null
+    if (req.body.update === "delivered") {
+      result = await Invoice.updateById(req.body._id, { delivered: true })
+    }
+
+    if (req.body.update === "notified") {
+      result = await Invoice.updateById(req.body._id, { notified: true })
+    }
+
+    if (result) {
+      res.status(201).send({ success: true })
+    } else {
+      throw new Error("Could not update delivery status @statusCode 500")
+    }
+  } catch (e) {
+    next(e)
+  }
+}
+
 // Drop a collection
 const DropCollection = async (req, res, next) => {
   try {
@@ -59,4 +94,4 @@ const DropCollection = async (req, res, next) => {
   }
 }
 
-module.exports = { CreateInvoice, GetAllInvoices, DropCollection }
+module.exports = { CreateInvoice, GetAllInvoices, NotifyPatient, Update, DropCollection }

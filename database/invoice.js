@@ -15,7 +15,7 @@ class Invoice {
     this.paid = paid
     this.notified = false
     this.delivered = false
-    this.completed = false
+    this.completed = true
     this.createdAt = moment().format()
     this.invoiceId = moment().format("DDMMYY-HHmmss")
     this.labId = "bhaluka123"
@@ -46,7 +46,15 @@ class Invoice {
   static async findAll() {
     try {
       const db = getClient()
-      const projection = { invoiceId: 1, name: 1, netAmount: 1, paid: 1, completed: 1, delivered: 1, notified: 1, _id: 0 }
+      const projection = {
+        invoiceId: 1,
+        name: 1,
+        netAmount: 1,
+        paid: 1,
+        completed: 1,
+        delivered: 1,
+        notified: 1
+      }
       const invoices = await db.collection("collection-1").find({}).project(projection).toArray()
       const total = await db.collection("collection-1").countDocuments()
       return { total, invoices }
@@ -69,10 +77,10 @@ class Invoice {
   }
 
   // Update a document
-  static async updateById(id, update) {
+  static async updateById(_id, update) {
     try {
       const db = getClient()
-      const filter = { _id: ObjectId(id) }
+      const filter = { _id: new ObjectId(_id) }
       const result = await db.collection("collection-1").updateOne(filter, { $set: update })
       if (result.modifiedCount === 0) {
         return null
